@@ -1,6 +1,7 @@
 import { useAuth } from "@/context/AuthContext";
 import { aiPredictions, vitalsHistory, appointments } from "@/data/mockData";
-import { analyzeVitals, getHealthScoreLabel } from "@/lib/aiPredictions";
+import { getHealthScoreLabel } from "@/lib/aiPredictions";
+import { useAIAnalysis } from "@/hooks/useAIAnalysis";
 import { HealthIndicator, HealthScoreRing } from "@/components/health/HealthIndicator";
 import { PredictionCard } from "@/components/health/PredictionCard";
 import { VitalCard } from "@/components/vitals/VitalCard";
@@ -13,10 +14,13 @@ export default function PatientDashboard() {
   const { user } = useAuth();
   const [expandedPrediction, setExpandedPrediction] = useState<string | null>(null);
 
-  const analysis = analyzeVitals(vitalsHistory);
+  const { analysis, isLoading, isAI } = useAIAnalysis({
+    vitals: vitalsHistory,
+    patientInfo: { name: user?.name, age: 34, bmi: 24.2, diseases: [] },
+  });
   const latest = vitalsHistory[vitalsHistory.length - 1];
   const upcomingAppts = appointments.filter((a) => a.status !== "completed" && a.status !== "cancelled");
-  const topPredictions = aiPredictions.slice(0, 3);
+  const topPredictions = analysis.predictions.slice(0, 3);
 
   const hour = new Date().getHours();
   const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
