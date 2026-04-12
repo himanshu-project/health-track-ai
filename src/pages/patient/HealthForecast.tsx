@@ -1,23 +1,22 @@
 import { useState } from "react";
 import { vitalsHistory } from "@/data/mockData";
-import { analyzeVitals, getHealthScoreLabel } from "@/lib/aiPredictions";
+import { getHealthScoreLabel } from "@/lib/aiPredictions";
+import { useAIAnalysis } from "@/hooks/useAIAnalysis";
 import { HealthIndicator, HealthScoreRing } from "@/components/health/HealthIndicator";
 import { PredictionCard } from "@/components/health/PredictionCard";
 import { VitalsChart } from "@/components/vitals/VitalsChart";
-import { Brain, RefreshCw } from "lucide-react";
+import { Brain, RefreshCw, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/context/AuthContext";
 
 export default function HealthForecast() {
   const [expanded, setExpanded] = useState<string | null>(null);
-  const [analyzing, setAnalyzing] = useState(false);
+  const { user } = useAuth();
 
-  const analysis = analyzeVitals(vitalsHistory);
-
-  const handleReanalyze = async () => {
-    setAnalyzing(true);
-    await new Promise((r) => setTimeout(r, 1500));
-    setAnalyzing(false);
-  };
+  const { analysis, isLoading, isAI, error, reanalyze } = useAIAnalysis({
+    vitals: vitalsHistory,
+    patientInfo: { name: user?.name, age: 34, bmi: 24.2, diseases: [] },
+  });
 
   const statusConfig = {
     healthy: { bg: "bg-healthy-bg", border: "border-healthy/20", text: "text-healthy", label: "Healthy" },
@@ -36,22 +35,32 @@ export default function HealthForecast() {
           <h2 className="text-xl font-bold text-foreground flex items-center gap-2">
             <Brain className="w-5 h-5 text-primary" /> AI Health Forecast
           </h2>
-          <p className="text-muted-foreground text-sm mt-1">Predictive analysis based on your vitals history</p>
+          <p className="text-muted-foreground text-sm mt-1 flex items-center gap-2">
+            {isAI ? (
+              <>
+                <Sparkles className="w-3.5 h-3.5 text-primary" />
+                Powered by Lovable AI — real-time analysis of your vitals
+              </>
+            ) : (
+              "Predictive analysis based on your vitals history"
+            )}
+          </p>
+          {error && <p className="text-xs text-caution mt-1">{error}</p>}
         </div>
         <Button
           variant="outline"
           size="sm"
           className="gap-2"
-          onClick={handleReanalyze}
-          disabled={analyzing}
+          onClick={reanalyze}
+          disabled={isLoading}
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${analyzing ? "animate-spin" : ""}`} />
-          {analyzing ? "Analyzing..." : "Re-analyze"}
+          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+          {isLoading ? "Analyzing..." : "Re-analyze"}
         </Button>
       </div>
 
       {/* Overall Score Card */}
-      <div className={`rounded-2xl border p-6 ${statusConfig.bg} ${statusConfig.border}`}>
+      <div className={`rounded-2xl border p-6 ${statusConfig.bg} ${statusConfig.border} ${isLoading ? "opacity-60 animate-pulse" : ""}`}>
         <div className="flex items-center justify-between">
           <div>
             <p className="text-muted-foreground text-sm font-medium">Overall Health Score</p>
@@ -62,7 +71,7 @@ export default function HealthForecast() {
               {getHealthScoreLabel(analysis.score)} — {statusConfig.label}
             </p>
             <p className="text-muted-foreground text-xs mt-3 max-w-sm">
-              Based on {vitalsHistory.length} vitals readings. AI analysis detected {risks.length} risk{risks.length !== 1 ? "s" : ""} and {cautions.length} caution{cautions.length !== 1 ? "s" : ""}.
+              Based on {vitalsHistory.length} vitals readings. {isAI ? "AI" : "Rule-based"} analysis detected {risks.length} risk{risks.length !== 1 ? "s" : ""} and {cautions.length} caution{cautions.length !== 1 ? "s" : ""}.
             </p>
           </div>
           <HealthScoreRing score={analysis.score} status={analysis.status} size={100} />
@@ -90,12 +99,8 @@ export default function HealthForecast() {
           </h3>
           <div className="space-y-3">
             {risks.map((p) => (
-              <PredictionCard
-                key={p.id}
-                prediction={p}
-                expanded={expanded === p.id}
-                onClick={() => setExpanded(expanded === p.id ? null : p.id)}
-              />
+              <PredictionCard key={p.id} prediction={p} expanded={expanded === p.id}
+                onClick={() => setExpanded(expanded === p.id ? null : p.id)} />
             ))}
           </div>
         </div>
@@ -109,12 +114,8 @@ export default function HealthForecast() {
           </h3>
           <div className="space-y-3">
             {cautions.map((p) => (
-              <PredictionCard
-                key={p.id}
-                prediction={p}
-                expanded={expanded === p.id}
-                onClick={() => setExpanded(expanded === p.id ? null : p.id)}
-              />
+              <PredictionCard key={p.id} prediction={p} expanded={expanded === p.id}
+                onClick={() => setExpanded(expanded === p.id ? null : p.id)} />
             ))}
           </div>
         </div>
@@ -128,12 +129,8 @@ export default function HealthForecast() {
           </h3>
           <div className="space-y-3">
             {insights.map((p) => (
-              <PredictionCard
-                key={p.id}
-                prediction={p}
-                expanded={expanded === p.id}
-                onClick={() => setExpanded(expanded === p.id ? null : p.id)}
-              />
+              <PredictionCard key={p.id} prediction={p} expanded={expanded === p.id}
+                onClick={() => setExpanded(expanded === p.id ? null : p.id)} />
             ))}
           </div>
         </div>
