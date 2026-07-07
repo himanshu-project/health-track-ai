@@ -2,7 +2,10 @@ import { useState } from "react";
 import { vitalsHistory } from "@/data/mockData";
 import { getHealthScoreLabel } from "@/lib/aiPredictions";
 import { useAIAnalysis } from "@/hooks/useAIAnalysis";
-import { HealthIndicator, HealthScoreRing } from "@/components/health/HealthIndicator";
+import {
+  HealthIndicator,
+  HealthScoreRing,
+} from "@/components/health/HealthIndicator";
 import { PredictionCard } from "@/components/health/PredictionCard";
 import { VitalsChart } from "@/components/vitals/VitalsChart";
 import { Brain, RefreshCw, Sparkles } from "lucide-react";
@@ -19,9 +22,24 @@ export default function HealthForecast() {
   });
 
   const statusConfig = {
-    healthy: { bg: "bg-healthy-bg", border: "border-healthy/20", text: "text-healthy", label: "Healthy" },
-    caution: { bg: "bg-caution-bg", border: "border-caution/20", text: "text-caution", label: "Moderate Risk" },
-    risk: { bg: "bg-risk-bg", border: "border-risk/20", text: "text-risk", label: "High Risk" },
+    healthy: {
+      bg: "bg-healthy-bg",
+      border: "border-healthy/20",
+      text: "text-healthy",
+      label: "Healthy",
+    },
+    caution: {
+      bg: "bg-caution-bg",
+      border: "border-caution/20",
+      text: "text-caution",
+      label: "Moderate Risk",
+    },
+    risk: {
+      bg: "bg-risk-bg",
+      border: "border-risk/20",
+      text: "text-risk",
+      label: "High Risk",
+    },
   }[analysis.status];
 
   const risks = analysis.predictions.filter((p) => p.type === "risk");
@@ -39,7 +57,7 @@ export default function HealthForecast() {
             {isAI ? (
               <>
                 <Sparkles className="w-3.5 h-3.5 text-primary" />
-                Powered by Lovable AI — real-time analysis of your vitals
+                Powered by HealthTrack AI — real-time analysis of your vitals
               </>
             ) : (
               "Predictive analysis based on your vitals history"
@@ -54,16 +72,22 @@ export default function HealthForecast() {
           onClick={reanalyze}
           disabled={isLoading}
         >
-          <RefreshCw className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`} />
+          <RefreshCw
+            className={`w-3.5 h-3.5 ${isLoading ? "animate-spin" : ""}`}
+          />
           {isLoading ? "Analyzing..." : "Re-analyze"}
         </Button>
       </div>
 
       {/* Overall Score Card */}
-      <div className={`rounded-2xl border p-6 ${statusConfig.bg} ${statusConfig.border} ${isLoading ? "opacity-60 animate-pulse" : ""}`}>
+      <div
+        className={`rounded-2xl border p-6 ${statusConfig.bg} ${statusConfig.border} ${isLoading ? "opacity-60 animate-pulse" : ""}`}
+      >
         <div className="flex items-center justify-between">
           <div>
-            <p className="text-muted-foreground text-sm font-medium">Overall Health Score</p>
+            <p className="text-muted-foreground text-sm font-medium">
+              Overall Health Score
+            </p>
             <h3 className={`text-3xl font-bold mt-1 ${statusConfig.text}`}>
               {analysis.score} / 100
             </h3>
@@ -71,16 +95,38 @@ export default function HealthForecast() {
               {getHealthScoreLabel(analysis.score)} — {statusConfig.label}
             </p>
             <p className="text-muted-foreground text-xs mt-3 max-w-sm">
-              Based on {vitalsHistory.length} vitals readings. {isAI ? "AI" : "Rule-based"} analysis detected {risks.length} risk{risks.length !== 1 ? "s" : ""} and {cautions.length} caution{cautions.length !== 1 ? "s" : ""}.
+              Based on {vitalsHistory.length} vitals readings.{" "}
+              {isAI ? "AI" : "Rule-based"} analysis detected {risks.length} risk
+              {risks.length !== 1 ? "s" : ""} and {cautions.length} caution
+              {cautions.length !== 1 ? "s" : ""}.
             </p>
           </div>
-          <HealthScoreRing score={analysis.score} status={analysis.status} size={100} />
+          <HealthScoreRing
+            score={analysis.score}
+            status={analysis.status}
+            size={100}
+          />
         </div>
         <div className="grid grid-cols-3 gap-3 mt-5">
           {[
-            { label: "Risk Alerts", count: risks.length, color: "text-risk", bg: "bg-risk/10" },
-            { label: "Cautions", count: cautions.length, color: "text-caution", bg: "bg-caution/10" },
-            { label: "Insights", count: insights.length, color: "text-healthy", bg: "bg-healthy/10" },
+            {
+              label: "Risk Alerts",
+              count: risks.length,
+              color: "text-risk",
+              bg: "bg-risk/10",
+            },
+            {
+              label: "Cautions",
+              count: cautions.length,
+              color: "text-caution",
+              bg: "bg-caution/10",
+            },
+            {
+              label: "Insights",
+              count: insights.length,
+              color: "text-healthy",
+              bg: "bg-healthy/10",
+            },
           ].map(({ label, count, color, bg }) => (
             <div key={label} className={`${bg} rounded-xl p-3 text-center`}>
               <p className={`text-2xl font-bold ${color}`}>{count}</p>
@@ -99,8 +145,12 @@ export default function HealthForecast() {
           </h3>
           <div className="space-y-3">
             {risks.map((p) => (
-              <PredictionCard key={p.id} prediction={p} expanded={expanded === p.id}
-                onClick={() => setExpanded(expanded === p.id ? null : p.id)} />
+              <PredictionCard
+                key={p.id}
+                prediction={p}
+                expanded={expanded === p.id}
+                onClick={() => setExpanded(expanded === p.id ? null : p.id)}
+              />
             ))}
           </div>
         </div>
@@ -114,8 +164,12 @@ export default function HealthForecast() {
           </h3>
           <div className="space-y-3">
             {cautions.map((p) => (
-              <PredictionCard key={p.id} prediction={p} expanded={expanded === p.id}
-                onClick={() => setExpanded(expanded === p.id ? null : p.id)} />
+              <PredictionCard
+                key={p.id}
+                prediction={p}
+                expanded={expanded === p.id}
+                onClick={() => setExpanded(expanded === p.id ? null : p.id)}
+              />
             ))}
           </div>
         </div>
@@ -129,8 +183,12 @@ export default function HealthForecast() {
           </h3>
           <div className="space-y-3">
             {insights.map((p) => (
-              <PredictionCard key={p.id} prediction={p} expanded={expanded === p.id}
-                onClick={() => setExpanded(expanded === p.id ? null : p.id)} />
+              <PredictionCard
+                key={p.id}
+                prediction={p}
+                expanded={expanded === p.id}
+                onClick={() => setExpanded(expanded === p.id ? null : p.id)}
+              />
             ))}
           </div>
         </div>
@@ -138,24 +196,42 @@ export default function HealthForecast() {
 
       {/* Trend chart */}
       <div className="bg-card rounded-2xl border border-border p-6 shadow-card">
-        <h3 className="font-semibold text-foreground mb-4">Blood Pressure Trend Analysis</h3>
+        <h3 className="font-semibold text-foreground mb-4">
+          Blood Pressure Trend Analysis
+        </h3>
         <VitalsChart
           data={vitalsHistory}
           metrics={[
-            { key: "systolic", label: "Systolic", color: "#dc2626", unit: "mmHg", referenceMax: 120 },
-            { key: "diastolic", label: "Diastolic", color: "#7c3aed", unit: "mmHg", referenceMax: 80 },
+            {
+              key: "systolic",
+              label: "Systolic",
+              color: "#dc2626",
+              unit: "mmHg",
+              referenceMax: 120,
+            },
+            {
+              key: "diastolic",
+              label: "Diastolic",
+              color: "#7c3aed",
+              unit: "mmHg",
+              referenceMax: 80,
+            },
           ]}
           height={220}
         />
         <p className="text-xs text-muted-foreground mt-3 italic">
-          ⚠️ Dashed lines indicate normal thresholds. Values above indicate elevated levels.
+          ⚠️ Dashed lines indicate normal thresholds. Values above indicate
+          elevated levels.
         </p>
       </div>
 
       {/* Disclaimer */}
       <div className="bg-muted/50 rounded-xl p-4 border border-border">
         <p className="text-xs text-muted-foreground">
-          <strong>⚕️ Medical Disclaimer:</strong> AI predictions are for informational purposes only and do not replace professional medical advice. Always consult your healthcare provider before making health decisions.
+          <strong>⚕️ Medical Disclaimer:</strong> AI predictions are for
+          informational purposes only and do not replace professional medical
+          advice. Always consult your healthcare provider before making health
+          decisions.
         </p>
       </div>
     </div>

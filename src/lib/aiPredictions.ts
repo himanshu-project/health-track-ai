@@ -8,12 +8,17 @@ export interface PredictionResult {
 }
 
 /**
- * Call the AI edge function to analyze vitals with Lovable AI (Gemini).
+ * Call the AI edge function to analyze vitals with HealthTrack AI (Gemini).
  * Falls back to rule-based analysis if the AI call fails.
  */
 export async function analyzeVitalsAI(
   vitals: VitalRecord[],
-  patientInfo?: { name?: string; age?: number; bmi?: number; diseases?: string[] }
+  patientInfo?: {
+    name?: string;
+    age?: number;
+    bmi?: number;
+    diseases?: string[];
+  },
 ): Promise<PredictionResult> {
   try {
     const { data, error } = await supabase.functions.invoke("analyze-vitals", {
@@ -50,66 +55,92 @@ export function analyzeVitals(vitals: VitalRecord[]): PredictionResult {
   const bpTrend = latest.systolic - oldest.systolic;
   if (latest.systolic >= 140 || latest.diastolic >= 90) {
     predictions.push({
-      id: crypto.randomUUID(), type: "risk", title: "Stage 2 Hypertension Risk",
+      id: crypto.randomUUID(),
+      type: "risk",
+      title: "Stage 2 Hypertension Risk",
       description: `Current reading ${latest.systolic}/${latest.diastolic} mmHg meets hypertension criteria. BP has risen ${bpTrend} mmHg.`,
-      recommendation: "Immediate medical consultation recommended. Reduce sodium, DASH diet, medication evaluation.",
-      date: latest.date, icon: "🫀",
+      recommendation:
+        "Immediate medical consultation recommended. Reduce sodium, DASH diet, medication evaluation.",
+      date: latest.date,
+      icon: "🫀",
     });
     scoreDeductions += 30;
   } else if (latest.systolic >= 130 || bpTrend > 10) {
     predictions.push({
-      id: crypto.randomUUID(), type: "caution", title: "Elevated Blood Pressure Trend",
+      id: crypto.randomUUID(),
+      type: "caution",
+      title: "Elevated Blood Pressure Trend",
       description: `BP trending upward (+${bpTrend} mmHg). Current: ${latest.systolic}/${latest.diastolic} mmHg.`,
-      recommendation: "Monitor daily. Reduce salt, exercise 30 min/day, limit alcohol.",
-      date: latest.date, icon: "🩺",
+      recommendation:
+        "Monitor daily. Reduce salt, exercise 30 min/day, limit alcohol.",
+      date: latest.date,
+      icon: "🩺",
     });
     scoreDeductions += 15;
   }
 
   if (latest.oxygenLevel < 95) {
     predictions.push({
-      id: crypto.randomUUID(), type: "risk", title: "Low Oxygen Saturation",
+      id: crypto.randomUUID(),
+      type: "risk",
+      title: "Low Oxygen Saturation",
       description: `SpO2 at ${latest.oxygenLevel}% — below normal threshold of 95%.`,
-      recommendation: "Seek immediate medical evaluation. Practice deep breathing.",
-      date: latest.date, icon: "🫁",
+      recommendation:
+        "Seek immediate medical evaluation. Practice deep breathing.",
+      date: latest.date,
+      icon: "🫁",
     });
     scoreDeductions += 25;
   }
 
   if (latest.bloodSugar >= 126) {
     predictions.push({
-      id: crypto.randomUUID(), type: "risk", title: "Diabetic Range Blood Sugar",
+      id: crypto.randomUUID(),
+      type: "risk",
+      title: "Diabetic Range Blood Sugar",
       description: `Fasting blood sugar ${latest.bloodSugar} mg/dL is in the diabetic range.`,
-      recommendation: "Schedule HbA1c test. Strict dietary modifications required.",
-      date: latest.date, icon: "🩸",
+      recommendation:
+        "Schedule HbA1c test. Strict dietary modifications required.",
+      date: latest.date,
+      icon: "🩸",
     });
     scoreDeductions += 28;
   } else if (latest.bloodSugar >= 100) {
     predictions.push({
-      id: crypto.randomUUID(), type: "caution", title: "Pre-diabetic Blood Sugar",
+      id: crypto.randomUUID(),
+      type: "caution",
+      title: "Pre-diabetic Blood Sugar",
       description: `Blood sugar ${latest.bloodSugar} mg/dL in pre-diabetic range.`,
       recommendation: "Reduce refined carbs. Exercise regularly.",
-      date: latest.date, icon: "🩸",
+      date: latest.date,
+      icon: "🩸",
     });
     scoreDeductions += 12;
   }
 
   if (latest.heartRate > 100) {
     predictions.push({
-      id: crypto.randomUUID(), type: "risk", title: "Tachycardia Detected",
+      id: crypto.randomUUID(),
+      type: "risk",
+      title: "Tachycardia Detected",
       description: `Resting heart rate ${latest.heartRate} BPM exceeds normal range.`,
       recommendation: "Medical evaluation recommended. Avoid stimulants.",
-      date: latest.date, icon: "💓",
+      date: latest.date,
+      icon: "💓",
     });
     scoreDeductions += 20;
   }
 
   if (scoreDeductions < 15) {
     predictions.push({
-      id: crypto.randomUUID(), type: "info", title: "Vitals Within Healthy Range",
+      id: crypto.randomUUID(),
+      type: "info",
+      title: "Vitals Within Healthy Range",
       description: "All key indicators are within normal parameters.",
-      recommendation: "Maintain current lifestyle. Continue regular monitoring.",
-      date: latest.date, icon: "✅",
+      recommendation:
+        "Maintain current lifestyle. Continue regular monitoring.",
+      date: latest.date,
+      icon: "✅",
     });
   }
 
@@ -130,9 +161,12 @@ export function getHealthScoreLabel(score: number): string {
 
 export function getVitalStatus(
   vital: keyof Omit<VitalRecord, "date">,
-  value: number
+  value: number,
 ): "healthy" | "caution" | "risk" {
-  const ranges: Record<string, { healthy: [number, number]; caution: [number, number] }> = {
+  const ranges: Record<
+    string,
+    { healthy: [number, number]; caution: [number, number] }
+  > = {
     heartRate: { healthy: [60, 100], caution: [55, 110] },
     systolic: { healthy: [90, 120], caution: [120, 140] },
     diastolic: { healthy: [60, 80], caution: [80, 90] },
